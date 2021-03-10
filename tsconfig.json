@@ -5,11 +5,7 @@
     "target": "ES5",
     "module": "esnext",
     "moduleResolution": "node",
-    "lib": [
-      "esnext",
-      "esnext.asynciterable",
-      "dom"
-    ],
+    "lib": ["esnext", "esnext.asynciterable", "dom"],
     "esModuleInterop": true,
     "allowJs": true,
     "sourceMap": false,
@@ -19,12 +15,8 @@
     "resolveJsonModule": true,
     "skipLibCheck": true,
     "paths": {
-      "~/*": [
-        "./*"
-      ],
-      "@/*": [
-        "./*"
-      ]
-    },
+      "~/*": ["./src/*"],
+      "@/*": ["./src/*"]
+    }
   }
 }
