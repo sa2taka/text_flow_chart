@@ -8,6 +8,21 @@ interface Syntax {
 
 const nodeStatements = ['normal', 'decision', 'repeat-start', 'repeat-end'];
 
+const defaultSetting = `
+  graph [
+    charset = "UTF-8";
+    labelloc = "t";
+  ];
+
+  node [
+
+  ];
+
+  edge [
+
+  ];
+`;
+
 export function createDotFromText(text: String) {
   const parsed = parse(text);
 
@@ -326,18 +341,3 @@ function setRepeatEnd(syntaxes: Syntax[]) {
   }
   return syntaxes;
 }
-
-const defaultSetting = `
-  graph [
-    charset = "UTF-8";
-    labelloc = "t";
-  ];
-
-  node [
-
-  ];
-
-  edge [
-
-  ];
-`;
