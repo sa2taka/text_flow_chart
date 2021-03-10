@@ -22,6 +22,7 @@ const defaultSetting = `
 
   ];
 `;
+const foundationWidth = 1;
 
 export function createDotFromText(text: String) {
   const parsed = parse(text);
@@ -47,17 +48,15 @@ function createNodeDefinition(syntaxes: Syntax[]) {
         return '';
     }
   }
-
+  const maxLevel = syntaxes.reduce((acc, s) => (acc > s.level ? acc : s.level), -1);
   return syntaxes
     .map((s, index) => {
       if (!nodeStatements.includes(s.statement)) {
         return null;
       }
       const shape = getShape(s);
-      if (s.statement === 'repeat-end') {
-        return `  edge${index} [shape = ${shape}, label = "${s.content}", width = 2];`;
-      }
-      return `  edge${index} [shape = ${shape}, label = "${s.content}"];`;
+      const width = (foundationWidth * maxLevel) / s.level;
+      return `  edge${index} [shape = ${shape}, label = "${s.content}" width = ${width};];`;
     })
     .filter((s) => s)
     .join('\n');
