@@ -342,5 +342,15 @@ function setRepeatEnd(syntaxes: Syntax[]) {
     }
     i += 1;
   }
+
+  repeatStack.forEach((rs) => {
+    const newSyntax: Syntax = {
+      statement: 'repeat-end',
+      level: rs.level,
+      content: '',
+      next: [],
+    };
+    syntaxes.push(newSyntax);
+  });
   return syntaxes;
 }
