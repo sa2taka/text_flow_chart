@@ -9,19 +9,23 @@ import * as path from 'path';
 import pkg from './package.json';
 
 const moduleName = pkg.name.replace(/^@.*\//, '');
-
+function toCamelCase(p) {
+  return p.replace(/_./g, function (s) {
+    return s.charAt(1).toUpperCase();
+  });
+}
 export default [
   {
     input: `src/${moduleName}.ts`,
     output: [
       {
-        name: moduleName,
+        name: toCamelCase(moduleName),
         file: pkg.browser,
         format: 'iife',
         sourcemap: 'inline',
       },
       {
-        name: moduleName,
+        name: toCamelCase(moduleName),
         file: pkg.browser.replace('.js', '.min.js'),
         format: 'iife',
         plugins: [terser()],
