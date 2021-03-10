@@ -1,10 +1,12 @@
 interface Syntax {
-  statement: 'normal' | 'decision' | 'condition' | 'repeat-start' | 'repeat-end';
+  statement: 'normal' | 'decision' | 'condition' | 'repeat-start' | 'repeat-end' | 'next';
   level: number;
   content: string;
   next: number[];
   id?: string;
 }
+
+const nodeStatements = ['normal', 'decision', 'repeat-start', 'repeat-end'];
 
 export function createDotFromText(text: String) {
   const parsed = parse(text);
@@ -26,13 +28,14 @@ function createNodeDefinition(syntaxes: Syntax[]) {
       case 'repeat-end':
         return 'invhouse';
       case 'condition':
+      case 'next':
         return '';
     }
   }
 
   return syntaxes
     .map((s, index) => {
-      if (s.statement === 'condition') {
+      if (!nodeStatements.includes(s.statement)) {
         return null;
       }
       const shape = getShape(s);
@@ -43,6 +46,11 @@ function createNodeDefinition(syntaxes: Syntax[]) {
 }
 
 function createEdgeDefinition(syntaxes: Syntax[]) {
+  function getNextCondition(nextIndex: number, syntaxes: Syntax[]): number {
+    return syntaxes[nextIndex]?.statement === 'next'
+      ? getNextCondition(syntaxes[nextIndex].next[0], syntaxes)
+      : nextIndex;
+  }
   function findConditions(targetSyntax: Syntax, startIndex: number, syntaxes: Syntax[]) {
     const conditions = [];
     for (let i = startIndex + 1; i < syntaxes.length; i++) {
@@ -56,18 +64,31 @@ function createEdgeDefinition(syntaxes: Syntax[]) {
     }
     return conditions;
   }
+  function createEdge(next: number, prev: number) {
+    const _next = getNextCondition(next, syntaxes);
+    return `  edge${prev} -> edge${_next}`;
+  }
+
   return syntaxes
     .map((s, index) => {
-      if (s.statement === 'condition') {
+      if (!nodeStatements.includes(s.statement)) {
         return null;
       }
       if (s.statement !== 'decision') {
-        return s.next.map((n) => `  edge${index} -> edge${n}`).join('\n');
+        return s.next
+          .map((n) => {
+            return createEdge(n, index);
+          })
+          .join('\n');
       }
 
       const conditions = findConditions(s, index, syntaxes);
 
-      return s.next.map((n, nIndex) => `  edge${index} -> edge${n} [label = "${conditions[nIndex]}"];`).join('\n');
+      return s.next
+        .map((n, nIndex) => {
+          return createEdge(n, index) + ` [label = "${conditions[nIndex]}"];`;
+        })
+        .join('\n');
     })
     .filter((s) => s)
     .join('\n');
@@ -87,6 +108,18 @@ function parse(text: String): Syntax[] {
 }
 
 function parseLine(line: string): Syntax | undefined {
+  function getStatement() {
+    if (line.match(/^\s*->/) || line.match(/^\s*=>/)) {
+      return 'next';
+    }
+
+    if (line.match(/^\s*-/)) {
+      return 'condition';
+    }
+
+    return 'normal';
+  }
+
   if (line.trim() === '') {
     return undefined;
   }
@@ -98,8 +131,8 @@ function parseLine(line: string): Syntax | undefined {
   const tabs = indent.match(/\t/g);
   const spaces = indent.match(/  /g);
   const level = (tabs ? tabs.length : 0) + (spaces ? spaces.length : 0) + 1;
-  const content = line.match(/^\s*(?:(\d+(?:\.\d+)*)\.?|-?)\s+(.+)?$/);
-  const statement = line.match(/^\s*-/) ? 'condition' : 'normal';
+  const content = line.match(/^\s*(?:(\d+(?:\.\d+)*)\.?|(?:->)|(?:=>)|-)?\s*(.+)$/);
+  const statement = getStatement();
 
   return {
     statement,
@@ -197,9 +230,23 @@ function setLink(syntaxes: Syntax[]) {
     if (targetSyntax.statement === 'condition') {
       return [];
     }
+    if (targetSyntax.statement === 'next') {
+      const targetId = targetSyntax.content.replace(/\.$/, '');
+      const nextIndex = syntaxes.findIndex((s) => s.id === targetId);
+      if (nextIndex !== -1) {
+        return [nextIndex];
+      } else if (targetSyntaxIndex + 1 <= syntaxes.length) {
+        return [targetSyntaxIndex + 1];
+      } else {
+        return [];
+      }
+    }
+
     if (targetSyntax.statement !== 'decision' && syntaxes[targetSyntaxIndex + 1]?.statement !== 'condition') {
+      // normal statement and repeat statement
       return [targetSyntaxIndex + 1];
     } else if (targetSyntax.statement !== 'decision') {
+      // last node in decision statement
       for (let i = targetSyntaxIndex; i < syntaxes.length; i++) {
         if (targetSyntax.level > syntaxes[i].level && syntaxes[i].statement !== 'condition') {
           return [i];
@@ -210,7 +257,7 @@ function setLink(syntaxes: Syntax[]) {
 
     const retVal = [];
     for (let i = targetSyntaxIndex; i < syntaxes.length; i++) {
-      if (syntaxes[i].statement === 'condition' && i + 1 < syntaxes.length) {
+      if (syntaxes[i].statement === 'condition' && i + 1 <= syntaxes.length) {
         retVal.push(i + 1);
       }
     }

@@ -3,6 +3,7 @@ import rewire from 'rewire';
 
 test('generate dot', () => {
   const dot = createDotFromText(originText);
+  console.log(dot);
 });
 
 test('parse syntax', () => {
@@ -31,6 +32,9 @@ const originText = `
 - if b
   test
   test
+  => 1.
+- if c
+  -> 4.
 
 5. last
 `;
@@ -81,7 +85,7 @@ const originParsed = [
     statement: 'decision',
     level: 1,
     content: 'decision test',
-    next: [8, 11],
+    next: [8, 11, 15],
     id: '4',
   },
   {
@@ -102,7 +106,7 @@ const originParsed = [
     statement: 'normal',
     level: 2,
     content: 'test',
-    next: [13],
+    next: [16],
     id: undefined,
   },
   {
@@ -124,6 +128,27 @@ const originParsed = [
     level: 2,
     content: 'test',
     next: [13],
+    id: undefined,
+  },
+  {
+    statement: 'next',
+    level: 2,
+    content: '4.',
+    next: [7],
+    id: undefined,
+  },
+  {
+    statement: 'condition',
+    level: 1,
+    content: 'if c',
+    next: [],
+    id: undefined,
+  },
+  {
+    statement: 'next',
+    level: 2,
+    content: '1.',
+    next: [0],
     id: undefined,
   },
   {
