@@ -1,6 +1,6 @@
 import nodeResolve from '@rollup/plugin-node-resolve';
 import commonjs from '@rollup/plugin-commonjs';
-import typescript from '@rollup/plugin-typescript';
+import typescript from 'rollup-plugin-typescript2';
 import { babel } from '@rollup/plugin-babel';
 import { terser } from 'rollup-plugin-terser';
 
@@ -8,9 +8,11 @@ import * as path from 'path';
 
 import pkg from './package.json';
 
+const moduleName = pkg.name.replace(/^@.*\//, '');
+
 export default [
   {
-    input: 'src/index.ts',
+    input: `src/${moduleName}.ts`,
     output: [
       {
         name: moduleName,
@@ -20,7 +22,6 @@ export default [
       },
       {
         name: moduleName,
-        // minifyするので.minを付与する
         file: pkg.browser.replace('.js', '.min.js'),
         format: 'iife',
         plugins: [terser()],
@@ -41,7 +42,7 @@ export default [
     ],
   },
   {
-    input: `src/${pkg.name}.ts`,
+    input: `src/${moduleName}.ts`,
     output: [
       {
         file: pkg.module,
@@ -52,7 +53,10 @@ export default [
     ],
     external: [...Object.keys(pkg.dependencies || {}), ...Object.keys(pkg.devDependencies || {})],
     plugins: [
-      typescript(),
+      typescript({
+        declaration: true,
+        declarationDir: './dist/types',
+      }),
       babel({
         babelHelpers: 'bundled',
         configFile: path.resolve(__dirname, '.babelrc.js'),
@@ -60,7 +64,7 @@ export default [
     ],
   },
   {
-    input: 'src/index.ts',
+    input: `src/${moduleName}.ts`,
     output: [
       {
         file: pkg.main,

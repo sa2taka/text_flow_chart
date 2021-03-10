@@ -17,6 +17,8 @@
     "paths": {
       "~/*": ["./src/*"],
       "@/*": ["./src/*"]
-    }
-  }
+    },
+    "declaration": true
+  },
+  "files": ["src/text_flow_chart.ts"]
 }
