@@ -3,6 +3,7 @@ interface Syntax {
   level: number;
   content: string;
   next: number[];
+  id?: string;
 }
 
 export function createDotFromText(text: String) {
@@ -76,7 +77,8 @@ function parse(text: String): Syntax[] {
   let parsed = text
     .trim()
     .split('\n')
-    .map((l) => parseLine(l));
+    .map((l) => parseLine(l))
+    .filter((l) => typeof l !== 'undefined') as Syntax[];
   adjustLevel(parsed);
   setStatement(parsed);
   setRepeatEnd(parsed);
@@ -84,7 +86,10 @@ function parse(text: String): Syntax[] {
   return parsed;
 }
 
-function parseLine(line: string): Syntax {
+function parseLine(line: string): Syntax | undefined {
+  if (line.trim() === '') {
+    return undefined;
+  }
   const indentMatch = line.match(/^\s*/g);
   let indent = '';
   if (indentMatch !== null) {
@@ -93,14 +98,15 @@ function parseLine(line: string): Syntax {
   const tabs = indent.match(/\t/g);
   const spaces = indent.match(/  /g);
   const level = (tabs ? tabs.length : 0) + (spaces ? spaces.length : 0) + 1;
-  const content = line.match(/^\s*(?:(?:\d+(?:\.\d+)*\.?)|-?)\s+(.+)?$/);
+  const content = line.match(/^\s*(?:(\d+(?:\.\d+)*)\.?|-?)\s+(.+)?$/);
   const statement = line.match(/^\s*-/) ? 'condition' : 'normal';
 
   return {
     statement,
     level,
-    content: content ? content[1] : '',
+    content: content ? content[2] : '',
     next: [],
+    id: content && content[1] !== '' ? content[1] : undefined,
   };
 }
 
