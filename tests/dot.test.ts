@@ -133,8 +133,8 @@ const originParsed = [
   {
     statement: 'next',
     level: 2,
-    content: '4.',
-    next: [7],
+    content: '1.',
+    next: [0],
     id: undefined,
   },
   {
@@ -147,8 +147,8 @@ const originParsed = [
   {
     statement: 'next',
     level: 2,
-    content: '1.',
-    next: [0],
+    content: '4.',
+    next: [6],
     id: undefined,
   },
   {
