@@ -1,0 +1,12 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "type": "npm",
+      "script": "test:transpile",
+      "problemMatcher": [],
+      "label": "npm: test:transpile",
+      "detail": "yarn tsc --noEmit false --sourcemap  --outDir ./dist ./src/dot.ts"
+    }
+  ]
+}
