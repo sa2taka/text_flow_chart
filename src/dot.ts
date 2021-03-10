@@ -54,6 +54,9 @@ function createNodeDefinition(syntaxes: Syntax[]) {
         return null;
       }
       const shape = getShape(s);
+      if (s.statement === 'repeat-end') {
+        return `  edge${index} [shape = ${shape}, label = "${s.content}", width = 2];`;
+      }
       return `  edge${index} [shape = ${shape}, label = "${s.content}"];`;
     })
     .filter((s) => s)
