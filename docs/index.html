@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
@@ -9,21 +10,29 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.4.12/ace.min.js"
     integrity="sha512-GoORoNnxst42zE3rYPj4bNBm0Q6ZRXKNH2D9nEmNvVF/z24ywVnijAWVi/09iBiVDQVf3UlZHpzhAJIdd9BXqw=="
     crossorigin="anonymous"></script>
-    <script src="text-flow-chart.min.js"></script>
+  <script src="text-flow-chart.min.js"></script>
   <style type="text/css" media="screen">
-  #main-content {
-    width: 100%;
-    height: 50vh;
-  	display: -webkit-box;
-  	display: -ms-flexbox;
-  	display: flex;
-  }
-  #editor {
-    width: 50%;
-    height: 100%;
-  }
+    #main-content {
+      width: 100%;
+      height: 100vh;
+      display: -webkit-box;
+      display: -ms-flexbox;
+      display: flex;
+    }
+
+    #editor {
+      width: 50%;
+      height: 100%;
+    }
+
+    #graph {
+      width: 50%;
+      height: 100%;
+      overflow: hidden;
+    }
   </style>
 </head>
+
 <body>
   <main id="main-content">
     <div id="editor"></div>
@@ -31,17 +40,37 @@
   </main>
   <script>
     var initialText = `ソート開始
-リストのすべての要素(a)に対して下記を行う
+1. リストのすべての要素(a)に対して下記を行う
   要素aより後ろの要素(b)に対して下記を行う
     要素aと要素bを比較する
     - a > b
       要素aと要素bを入れ替える
+    - test1
+      => 1.
+    - test 2
+      => 2.
     - a <= b
+2. テスト
 ソート終了
 `;
-    window.addEventListener('load', function() {
+    window.addEventListener('load', function () {
       var editor = ace.edit("editor");
-      var graph = textFlowChart.render("graph", initialText);
+      var graph = textFlowChart.getGraphvizInstance("graph");
+      graph
+        .attributer(function (datum, index, nodes) {
+          if (datum === "svg") {
+            var width = graph.node().clientWidth;
+            var height = graph.node().clientHeight;
+            var unit = "px";
+            selection.attr("width", `${width}${unit}`).attr("height", `${height}${unit}`);
+            datum.attributes.width = `${width}${unit}`;
+            datum.attributes.height = `${height}${unit}`;
+          }
+        })
+        .transition(function () {
+          return graph.transition(1000);
+        });
+
       var rendering = false;
 
       editor.getSession().on('change', render);
@@ -58,4 +87,5 @@
     });
   </script>
 </body>
+
 </html>

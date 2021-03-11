@@ -12,4 +12,7 @@ export default {
   converToDot(text: String) {
     return createDotFromText(text);
   },
+  getGraphvizInstance(targetId: string) {
+    return d3.graphviz(`#${targetId}`);
+  },
 };
