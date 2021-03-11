@@ -12,6 +12,8 @@ const defaultSetting = `
   graph [
     charset = "UTF-8";
     labelloc = "t";
+    splines =  false;
+    nodesep = 0.8;
   ];
 
   node [
@@ -83,7 +85,17 @@ function createEdgeDefinition(syntaxes: Syntax[]) {
   }
   function createEdge(next: number, prev: number) {
     const _next = getNextCondition(next, syntaxes);
-    return `  edge${prev} -> edge${_next}`;
+    if (next === _next || prev === _next) {
+      return `  edge${prev} -> edge${_next}`;
+    }
+    const emptyEdgeFrom = `  emptyEdge${prev} [width = 0; shape = point; label = "";];`;
+    const emptyEdgeTo = `  emptyEdge${_next} [width = 0; shape = point; label = "";];`;
+    const rankFrom = `  { rank=same;  emptyEdge${prev}; edge${prev}; };`;
+    const rankTo = `  { rank=same; emptyEdge${_next}; edge${_next};  };`;
+    const edges = `  edge${prev} -> emptyEdge${prev} [dir = none; arrowhead = none]
+  emptyEdge${prev} -> emptyEdge${_next} [dir = none; arrowhead = none];
+  edge${_next} ->  emptyEdge${_next}  [dir = back]`;
+    return `${emptyEdgeFrom}\n${emptyEdgeTo}\n${rankFrom}\n${rankTo}\n${edges}`;
   }
 
   return syntaxes
