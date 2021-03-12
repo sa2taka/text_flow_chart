@@ -28,7 +28,6 @@ const foundationWidth = 1;
 
 export function createDotFromText(text: String) {
   const parsed = parse(text);
-
   const nodeDefinition = createNodeDefinition(parsed);
   const edgeDefinition = createEdgeDefinition(parsed);
   return `digraph {\n ${defaultSetting}\n${nodeDefinition}\n${edgeDefinition}\n}`;
@@ -65,26 +64,27 @@ function createNodeDefinition(syntaxes: Syntax[]) {
 }
 
 function createEdgeDefinition(syntaxes: Syntax[]) {
-  function getNextCondition(nextIndex: number, syntaxes: Syntax[]): number {
-    return syntaxes[nextIndex]?.statement === 'next'
-      ? getNextCondition(syntaxes[nextIndex].next[0], syntaxes)
-      : nextIndex;
+  function getNext(nextIndex: number, syntaxes: Syntax[]): number {
+    return syntaxes[nextIndex]?.statement === 'next' ? getNext(syntaxes[nextIndex].next[0], syntaxes) : nextIndex;
   }
   function findConditions(targetSyntax: Syntax, startIndex: number, syntaxes: Syntax[]) {
     const conditions = [];
     for (let i = startIndex + 1; i < syntaxes.length; i++) {
-      if (syntaxes[i].level <= targetSyntax.level && syntaxes[i].statement !== 'condition') {
+      if (syntaxes[i].level < targetSyntax.level) {
+        break;
+      }
+      if (syntaxes[i].level === targetSyntax.level && syntaxes[i].statement !== 'condition') {
         break;
       }
 
-      if (syntaxes[i].level <= targetSyntax.level && syntaxes[i].statement === 'condition') {
+      if (syntaxes[i].level === targetSyntax.level && syntaxes[i].statement === 'condition') {
         conditions.push(syntaxes[i].content);
       }
     }
     return conditions;
   }
   function createEdge(next: number, prev: number) {
-    const _next = getNextCondition(next, syntaxes);
+    const _next = getNext(next, syntaxes);
     if (next === _next || prev === _next) {
       return `  edge${prev} -> edge${_next}`;
     }
@@ -112,7 +112,6 @@ function createEdgeDefinition(syntaxes: Syntax[]) {
       }
 
       const conditions = findConditions(s, index, syntaxes);
-
       return s.next
         .map((n, nIndex) => {
           return createEdge(n, index) + ` [label = "${conditions[nIndex]}"];`;
@@ -286,7 +285,11 @@ function setLink(syntaxes: Syntax[]) {
 
     const retVal = [];
     for (let i = targetSyntaxIndex; i < syntaxes.length; i++) {
-      if (syntaxes[i].statement === 'condition' && i + 1 <= syntaxes.length) {
+      if (
+        syntaxes[i].statement === 'condition' &&
+        syntaxes[i].level === targetSyntax.level &&
+        i + 1 <= syntaxes.length
+      ) {
         retVal.push(i + 1);
       }
     }

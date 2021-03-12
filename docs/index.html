@@ -30,31 +30,51 @@
       height: 100%;
       overflow: hidden;
     }
+
+    .toggle-btn {
+      position: absolute;
+      top: 3px;
+      right: 28px;
+
+      background-color: #222244;
+      border: none;
+      color: white;
+      padding: 8px;
+      cursor: pointer;
+      border-radius: 50%;
+      border: none;
+      outline: none;
+    }
   </style>
 </head>
 
 <body>
   <main id="main-content">
     <div id="editor"></div>
-    <div id="graph"></div>
+    <div id="graph">
+      <button class="toggle-btn"><img src="https://icongr.am/jam/magic-f.svg?size=16&color=ffffff" width="16px"
+          height="16px" loading="lazy" /></button>
+    </div>
   </main>
   <script>
     var initialText = `ソート開始
 1. リストのすべての要素(a)に対して下記を行う
+  要素を入れ替えたフラグをfalseとする
   要素aより後ろの要素(b)に対して下記を行う
-    要素aと要素bを比較する
-    - a > b
-      要素aと要素bを入れ替える
-    - test1
-      => 1.
-    - test 2
-      => 2.
-    - a <= b
-2. テスト
-ソート終了
+    要素bと要素bの次の要素(c)を比較する
+    - b > c
+      要素bと要素cを入れ替える
+      要素を入れ替えたフラグをtrueとする
+    - b <= c
+  要素を入れ替えたフラグ
+  - false
+    => 2.
+  - true
+2. ソート終了
 `;
     window.addEventListener('load', function () {
       var editor = ace.edit("editor");
+      editor.setOption("tabSize", 2);
       var graph = textFlowChart.getGraphvizInstance("graph");
       graph
         .attributer(function (datum, index, nodes) {
