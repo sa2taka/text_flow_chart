@@ -17,45 +17,85 @@ const defaultSetting = `
 
   ];
 `;
+
+const shapes: Record<DotNode['statement'], string> = {
+  normal: 'box',
+  decision: 'diamond',
+  condition: '',
+  repeat: 'house',
+  next: '',
+};
 const foundationWidth = 1;
 
 export function createDotFromText(text: String) {
   const nodes = parse(text);
+  const maxLevel = nodes.reduce((acc, s) => (acc > s.level ? acc : s.level), -1);
 
-  return '';
+  return nodes.map((node, index) => createDotDefinition(node, maxLevel, index)).join('\n');
 }
 
-function createDotDefinition(node: DotNode): String {
+function createDotDefinition(node: DotNode, maxLevel: number, index: number, locus: number[] = []): String {
   switch (node.statement) {
     case 'normal':
-      return createNormalNodeDot(node);
+      return createNormalDot(node, maxLevel, index, locus);
     case 'decision':
-      return createDecisionNodeDot(node);
+      return createDecisionDot(node, maxLevel, index, locus);
     case 'condition':
-      return createConditionNodeDot(node);
+      return createConditionDot(node, maxLevel, index, locus);
     case 'repeat':
-      return createRepeatNodeDot(node);
+      return createRepeatDot(node, maxLevel, index, locus);
     case 'next':
-      return createNextNodeDot(node);
+      return createNextDot(node, maxLevel, index, locus);
   }
 }
 
-function createNormalNodeDot(node: NormalNode): String {
+function createNormalDot(node: NormalNode, maxLevel: number, index: number, locus: number[] = []): String {
+  const width = (foundationWidth * maxLevel) / node.level;
+  const nodeDefinition = createNodeDot(node, locus.join('-') + index.toString(), width);
+
+  if (index === 0 && locus.length === 0) {
+    return nodeDefinition;
+  }
+
   return '';
 }
 
-function createDecisionNodeDot(node: DecisionNode): String {
+function createDecisionDot(node: DecisionNode, maxLevel: number, index: number, locus: number[] = []): String {
+  const width = (foundationWidth * maxLevel) / node.level;
+  const nodeDefinition = createNodeDot(node, locus.join('-') + index.toString(), width);
+
+  if (index === 0 && locus.length === 0) {
+    return nodeDefinition;
+  }
   return '';
 }
 
-function createConditionNodeDot(node: ConditionNode): String {
+function createConditionDot(node: ConditionNode, maxLevel: number, index: number, locus: number[] = []): String {
   return '';
 }
 
-function createRepeatNodeDot(node: RepeatNode): String {
+function createRepeatDot(node: RepeatNode, maxLevel: number, index: number, locus: number[] = []): String {
+  const lastShape = 'invhouse';
+  const width = (foundationWidth * maxLevel) / node.level;
+  const nodeDefinition = createNodeDot(node, locus.join('-') + index.toString(), width);
+
+  if (index === 0 && locus.length === 0) {
+    return nodeDefinition;
+  }
   return '';
 }
 
-function createNextNodeDot(node: NextNode): String {
+function createNextDot(node: NextNode, maxLevel: number, index: number, locus: number[] = []): String {
   return '';
+}
+
+function createNodeDot(node: DotNode, edgeId: string, width: number) {
+  console.assert(shapes[node.statement] !== '', 'Should define shape.');
+  const shape = shapes[node.statement];
+  const content = replaceSpecialCharacters(node.content);
+  return `  edge${edgeId} [shape = ${shape}, label = "${content}" width = ${width};];`;
+}
+
+function replaceSpecialCharacters(str: string) {
+  return str.replaceAll('\\', '\\\\').replaceAll('"', '\\"');
 }
