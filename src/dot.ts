@@ -57,7 +57,7 @@ function createNodeDefinition(syntaxes: Syntax[]) {
       }
       const shape = getShape(s);
       const width = (foundationWidth * maxLevel) / s.level;
-      return `  edge${index} [shape = ${shape}, label = "${s.content}" width = ${width};];`;
+      return `  edge${index} [shape = ${shape}, label = "${replaceSpecialCharacters(s.content)}" width = ${width};];`;
     })
     .filter((s) => s)
     .join('\n');
@@ -114,12 +114,16 @@ function createEdgeDefinition(syntaxes: Syntax[]) {
       const conditions = findConditions(s, index, syntaxes);
       return s.next
         .map((n, nIndex) => {
-          return createEdge(n, index) + ` [label = "${conditions[nIndex]}"];`;
+          return createEdge(n, index) + ` [label = "${replaceSpecialCharacters(conditions[nIndex])}"];`;
         })
         .join('\n');
     })
     .filter((s) => s)
     .join('\n');
+}
+
+function replaceSpecialCharacters(str: string) {
+  return str.replaceAll('\\', '\\\\').replaceAll('"', '\\"');
 }
 
 function parse(text: String): Syntax[] {
@@ -161,6 +165,9 @@ function parseLine(line: string): Syntax | undefined {
   const level = (tabs ? tabs.length : 0) + (spaces ? spaces.length : 0) + 1;
   const content = line.match(/^\s*(?:(\d+(?:\.\d+)*)\.?|(?:->)|(?:=>)|-)?\s*(.+)$/);
   const statement = getStatement();
+
+  console.log(line);
+  console.log(content);
 
   return {
     statement,

@@ -3,6 +3,8 @@ import { createDotFromText } from './dot';
 
 export default {
   render(target: string | Graphviz<any, any, any, any>, text: String) {
+    console.log(createDotFromText(text));
+
     if (typeof target === 'string') {
       return d3.graphviz(`#${target}`).renderDot(createDotFromText(text));
     } else {
