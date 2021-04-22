@@ -16,25 +16,9 @@ Text flow chart is creating flow charts from bulleted text.
 - if another
   another process
   multi line
-- if another another
+- if back to 1
   -> 1
 3. repeat line
   3.1. indent lines without condition is considered "repeat"
   3.2. multi repeat
-```
-
-### as ABNF
-
-```
-text = *statement(0)
-statement(n) = idnent(n) *(normal-statement / if-statement(n) / repeat-statement(n))
-normal-statement = [id 1*SPACE] string newline
-if-statement(n) = normal-statement (next-statement 1*(condition-statement(n) *statement(n + 1)))
-condition-statement(n) = indent(n) "-" string newline
-repeat-statement(n) = indent(n) normal-statement 1*statement(n + 1)
-next-statement = ("->" / "=>") 1*SPACE id
-id = 1*DIGIT *["." 1*DIGIT] ["."]
-string = *DISP ; DISP is a visible(printing) character including non-ASCII.
-indent(n) = 2nSPACE / nTAB ; 2n length spaces or n length tabs
-newline = CR / LF / CRLF
 ```
