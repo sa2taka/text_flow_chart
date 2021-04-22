@@ -8,7 +8,6 @@ test('parse syntax', () => {
 
 function testNodes(actual: DotNode[], expected: any[]) {
   for (let index in actual) {
-    console.log(index);
     const actualNode = actual[index];
     const expectedNode = expected[index];
     expect(actualNode.id).toBe(expectedNode.id);
