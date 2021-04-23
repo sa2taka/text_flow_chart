@@ -38,7 +38,7 @@ export default [
       }),
       babel({
         babelHelpers: 'bundled',
-        configFile: path.resolve(__dirname, '.babelrc.js'),
+        configFile: path.resolve(__dirname, 'babel.config.js'),
       }),
       nodeResolve({
         browser: true,
@@ -63,7 +63,7 @@ export default [
       }),
       babel({
         babelHelpers: 'bundled',
-        configFile: path.resolve(__dirname, '.babelrc.js'),
+        configFile: path.resolve(__dirname, 'babel.config.js'),
       }),
     ],
   },
@@ -82,7 +82,7 @@ export default [
       typescript(),
       babel({
         babelHelpers: 'bundled',
-        configFile: path.resolve(__dirname, '.babelrc.js'),
+        configFile: path.resolve(__dirname, 'babel.config.js'),
       }),
     ],
   },
