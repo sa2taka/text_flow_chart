@@ -7,15 +7,19 @@ export interface DotNodeBase {
   readonly statement: Statement;
   readonly id?: string;
   readonly content: string;
-  readonly parentNode?: HasChildNode;
   readonly level: number;
 }
 
-export interface NormalNode extends DotNodeBase {
-  statement: 'normal';
+export interface NormalChildNode extends DotNodeBase {
+  readonly parentNode?: ConditionNode | RepeatNode;
 }
 
-export interface DecisionNode extends DotNodeBase {
+export interface NormalNode extends NormalChildNode {
+  statement: 'normal';
+  readonly parentNode?: ConditionNode | RepeatNode;
+}
+
+export interface DecisionNode extends NormalChildNode {
   statement: 'decision';
   readonly children: ConditionNode[];
 }
@@ -23,14 +27,15 @@ export interface DecisionNode extends DotNodeBase {
 export interface ConditionNode extends DotNodeBase {
   statement: 'condition';
   readonly parentNode: DecisionNode;
-  readonly children: DotNode[];
+  readonly children: (NormalNode | DecisionNode | RepeatNode | NextNode)[];
 }
 
-export interface RepeatNode extends DotNodeBase {
+export interface RepeatNode extends NormalChildNode {
   statement: 'repeat';
-  readonly children: DotNode[];
+  readonly children: (NormalNode | DecisionNode | RepeatNode | NextNode)[];
 }
 
-export interface NextNode extends DotNodeBase {
+export interface NextNode extends NormalChildNode {
   statement: 'next';
+  readonly parentNode?: ConditionNode | RepeatNode;
 }

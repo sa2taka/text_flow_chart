@@ -1,5 +1,27 @@
 import { parse } from '../src/dot/syntax_parser';
 import { DotNode } from '../src/types/syntax';
+import TextFlowChart from '../src/text_flow_chart';
+
+test('create dot', () => {
+  const dot = TextFlowChart.convertToDot(`1. normal line
+2. condition line
+- if condition
+  process in condition
+  - nested if condition
+    nested process
+  - nested if another condition
+    nested another process
+- if another
+  another process
+  multi line
+- if back to 1
+  => 1
+3. repeat line
+  3.1. indent lines without condition is considered "repeat"
+  3.2. multi repeat
+`);
+  console.log(dot);
+});
 
 test('parse syntax', () => {
   const actual = parse(originText);
@@ -13,6 +35,7 @@ function testNodes(actual: DotNode[], expected: any[]) {
     expect(actualNode.id).toBe(expectedNode.id);
     expect(actualNode.content).toBe(expectedNode.content);
     expect(actualNode.statement).toBe(expectedNode.statement);
+    expect(actualNode.level).toBe(expectedNode.level);
     if (
       actualNode.statement === 'condition' ||
       actualNode.statement === 'decision' ||
@@ -37,15 +60,15 @@ const originText = `
   3.2. test
 
 4. decision test
-  - if a
-    test
-    test
-  - if b
-    test
-    test
-    => 1.
-  - if c
-    -> 4.
+- if a
+  test
+  test
+- if b
+  test
+  test
+  => 1.
+- if c
+  -> 4.
 
 5. last
 `;
@@ -57,6 +80,7 @@ const originParsed = [
     id: '1',
     parent: undefined,
     children: [],
+    level: 0,
   },
   {
     statement: 'normal',
@@ -64,24 +88,28 @@ const originParsed = [
     id: '2',
     parent: undefined,
     children: [],
+    level: 0,
   },
   {
     statement: 'repeat',
     content: 'repeat test',
     id: '3',
     parent: undefined,
+    level: 0,
     children: [
       {
         statement: 'normal',
         content: 'test',
         id: '3.1',
         children: [],
+        level: 1,
       },
       {
         statement: 'normal',
         content: 'test',
         id: '3.2',
         children: [],
+        level: 1,
       },
     ],
   },
@@ -90,23 +118,27 @@ const originParsed = [
     content: 'decision test',
     id: '4',
     parent: undefined,
+    level: 0,
     children: [
       {
         statement: 'condition',
         content: 'if a',
         id: undefined,
+        level: 0,
         children: [
           {
             statement: 'normal',
             content: 'test',
             id: undefined,
             children: [],
+            level: 1,
           },
           {
             statement: 'normal',
             content: 'test',
             id: undefined,
             children: [],
+            level: 1,
           },
         ],
       },
@@ -115,24 +147,28 @@ const originParsed = [
         content: 'if b',
         next: [],
         id: undefined,
+        level: 0,
         children: [
           {
             statement: 'normal',
             content: 'test',
             id: undefined,
             children: [],
+            level: 1,
           },
           {
             statement: 'normal',
             content: 'test',
             id: undefined,
             children: [],
+            level: 1,
           },
           {
             statement: 'next',
             content: '1.',
             id: undefined,
             children: [],
+            level: 1,
           },
         ],
       },
@@ -141,12 +177,14 @@ const originParsed = [
         content: 'if c',
         id: undefined,
         parent: undefined,
+        level: 0,
         children: [
           {
             statement: 'next',
             content: '4.',
             id: undefined,
             children: [],
+            level: 1,
           },
         ],
       },
@@ -158,5 +196,6 @@ const originParsed = [
     id: '5',
     parent: undefined,
     children: [],
+    level: 0,
   },
 ];

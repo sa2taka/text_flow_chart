@@ -9,7 +9,7 @@ export default {
       return target.renderDot(createDotFromText(text));
     }
   },
-  converToDot(text: String) {
+  convertToDot(text: String) {
     return createDotFromText(text);
   },
   getGraphvizInstance(targetId: string) {

@@ -1,7 +1,7 @@
-import { ConditionNode, DotNode, DotNodeBase, HasChildNode, Statement } from '../types/syntax';
+import { ConditionNode, DecisionNode, DotNode, DotNodeBase, HasChildNode, Statement } from '../types/syntax';
 import { gcd } from 'mathjs';
 
-type DotNodeBaseWithoutStatement = Pick<DotNodeBase, Exclude<keyof DotNodeBase, 'statement'>>;
+type DotNodeBaseWithoutStatement = Pick<DotNode, Exclude<keyof DotNodeBase, 'statement'>>;
 
 export function parse(text: String): DotNode[] {
   const lines = text.trim().split('\n');
@@ -20,14 +20,17 @@ export function parse(text: String): DotNode[] {
 
     for (let times = 0; times < prevLevel - level; times += 1) {
       if (parentNode) {
-        if (isConditionNodeHasSameLevelParent(parentNode)) {
-          parentNode = parentNode.parentNode;
+        if (
+          (statement !== 'condition' || parentNode.level !== level) &&
+          isConditionNodeHasSameLevelParent(parentNode)
+        ) {
+          parentNode = parentNode!.parentNode;
         }
         parentNode = parentNode!.parentNode;
       }
     }
 
-    const nodeBase = parseLine(line, parentNode, level);
+    const nodeBase = parseLine(line, level);
 
     parentNode = divideNode(statement, nodeBase, parentNode, nodes);
 
@@ -45,12 +48,12 @@ function divideNode(
 ) {
   switch (statement) {
     case 'condition':
-      if (nodeBase.parentNode?.statement !== 'decision') {
+      if (parentNode?.statement !== 'decision') {
         throw SyntaxError('Condition node must be child of decision statement.');
       }
-      const conditionNode = { statement, ...nodeBase, children: [] } as ConditionNode;
+      const conditionNode = { statement, ...nodeBase, children: [], parentNode } as ConditionNode;
       if (parentNode) {
-        parentNode.children.push(conditionNode);
+        (parentNode as DecisionNode).children.push(conditionNode);
       } else {
         nodes.push(conditionNode);
       }
@@ -58,10 +61,10 @@ function divideNode(
       break;
     case 'decision':
     case 'repeat':
-      if (nodeBase.parentNode?.statement === 'decision') {
+      if (parentNode?.statement === 'decision') {
         throw SyntaxError('Decision node children must be condition statements.');
       }
-      const hasChildNode = { statement, ...nodeBase, children: [] };
+      const hasChildNode = { statement, ...nodeBase, children: [], parentNode };
       if (parentNode) {
         (parentNode.children as DotNode[]).push(hasChildNode);
       } else {
@@ -71,10 +74,10 @@ function divideNode(
       break;
     case 'normal':
     case 'next':
-      if (nodeBase.parentNode?.statement === 'decision') {
+      if (parentNode?.statement === 'decision') {
         throw SyntaxError('Decision node children must be condition statements.');
       }
-      const singleNode = { statement, ...nodeBase };
+      const singleNode = { statement, ...nodeBase, parentNode };
       if (parentNode) {
         (parentNode.children as DotNode[]).push(singleNode);
       } else {
@@ -114,17 +117,12 @@ function parseStatement(targetLine: string, targetIndex: number, lines: readonly
   return 'normal';
 }
 
-function parseLine(
-  targetLine: string,
-  parentNode: HasChildNode | undefined,
-  level: number
-): DotNodeBaseWithoutStatement {
+function parseLine(targetLine: string, level: number): DotNodeBaseWithoutStatement {
   const { id, content } = extractContent(targetLine);
 
   return {
     id,
     content,
-    parentNode,
     level,
   };
 }
@@ -158,6 +156,11 @@ function findIndentUnit(lines: string[]) {
   }
 
   const levels = uniq(lines.map((line) => countIndentLevel(line))).filter((level) => level !== 0);
+  if (levels.length === 1) {
+    return levels[0];
+  } else if (levels.length === 0) {
+    return 0;
+  }
   return gcd(...levels);
 }
 
