@@ -1,4 +1,5 @@
-import { ConditionNode, DotNode, DotNodeBase, HasChildNode, Statement } from '../types/syntax';
+import { DotNode, HasChildNode, Statement } from '../types/syntax';
+import { gcd } from 'mathjs';
 
 export function parse(text: String): DotNode[] {
   const lines = text.trim().split('\n');
@@ -124,29 +125,8 @@ function findIndentUnit(lines: string[]) {
     return Array.from(new Set(array));
   }
 
-  function gcdList(numbers: number[]) {
-    if (!numbers[0]) {
-      return 1;
-    }
-
-    if (numbers[0] === 1) {
-      return 1;
-    }
-
-    return numbers.reduce((acc, number) => {
-      let x = acc;
-      let y = number;
-      while (y === 0) {
-        const t = y;
-        y = x % y;
-        x = t;
-      }
-      return x;
-    }, numbers[0]);
-  }
-
   const levels = uniq(lines.map((line) => countIndentLevel(line))).filter((level) => level !== 0);
-  return gcdList(levels);
+  return gcd(...levels);
 }
 
 function isConditionNodeHasSameLevelParent(parentNode: DotNode | undefined) {
