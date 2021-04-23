@@ -1,5 +1,7 @@
-import { DotNode, HasChildNode, Statement } from '../types/syntax';
+import { ConditionNode, DotNode, DotNodeBase, HasChildNode, Statement } from '../types/syntax';
 import { gcd } from 'mathjs';
+
+type DotNodeBaseWithoutStatement = Pick<DotNodeBase, Exclude<keyof DotNodeBase, 'statement'>>;
 
 export function parse(text: String): DotNode[] {
   const lines = text.trim().split('\n');
@@ -27,33 +29,60 @@ export function parse(text: String): DotNode[] {
 
     const nodeBase = parseLine(line, parentNode, level);
 
-    switch (statement) {
-      case 'decision':
-      case 'condition':
-      case 'repeat':
-        const hasChildNode = { statement, ...nodeBase };
-        if (parentNode) {
-          parentNode.children.push(hasChildNode);
-        } else {
-          nodes.push(hasChildNode);
-        }
-        parentNode = hasChildNode;
-        break;
-      case 'normal':
-      case 'next':
-        const singleNode = { statement, ...nodeBase };
-        if (parentNode) {
-          parentNode.children.push(singleNode);
-        } else {
-          nodes.push(singleNode);
-        }
-        break;
-    }
+    parentNode = divideNode(statement, nodeBase, parentNode, nodes);
 
     prevLevel = level;
   });
 
   return nodes;
+}
+
+function divideNode(
+  statement: string,
+  nodeBase: DotNodeBaseWithoutStatement,
+  parentNode: HasChildNode | undefined,
+  nodes: DotNode[]
+) {
+  switch (statement) {
+    case 'condition':
+      if (nodeBase.parentNode?.statement !== 'decision') {
+        throw SyntaxError('Condition node must be child of decision statement.');
+      }
+      const conditionNode = { statement, ...nodeBase, children: [] } as ConditionNode;
+      if (parentNode) {
+        parentNode.children.push(conditionNode);
+      } else {
+        nodes.push(conditionNode);
+      }
+      parentNode = conditionNode;
+      break;
+    case 'decision':
+    case 'repeat':
+      if (nodeBase.parentNode?.statement === 'decision') {
+        throw SyntaxError('Decision node children must be condition statements.');
+      }
+      const hasChildNode = { statement, ...nodeBase, children: [] };
+      if (parentNode) {
+        (parentNode.children as DotNode[]).push(hasChildNode);
+      } else {
+        nodes.push(hasChildNode);
+      }
+      parentNode = hasChildNode;
+      break;
+    case 'normal':
+    case 'next':
+      if (nodeBase.parentNode?.statement === 'decision') {
+        throw SyntaxError('Decision node children must be condition statements.');
+      }
+      const singleNode = { statement, ...nodeBase };
+      if (parentNode) {
+        (parentNode.children as DotNode[]).push(singleNode);
+      } else {
+        nodes.push(singleNode);
+      }
+      break;
+  }
+  return parentNode;
 }
 
 function parseStatement(targetLine: string, targetIndex: number, lines: readonly string[]): Statement {
@@ -85,7 +114,11 @@ function parseStatement(targetLine: string, targetIndex: number, lines: readonly
   return 'normal';
 }
 
-function parseLine(targetLine: string, parentNode: HasChildNode | undefined, level: number) {
+function parseLine(
+  targetLine: string,
+  parentNode: HasChildNode | undefined,
+  level: number
+): DotNodeBaseWithoutStatement {
   const { id, content } = extractContent(targetLine);
 
   return {
@@ -93,7 +126,6 @@ function parseLine(targetLine: string, parentNode: HasChildNode | undefined, lev
     content,
     parentNode,
     level,
-    children: [],
   };
 }
 

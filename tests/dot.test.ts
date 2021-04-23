@@ -13,10 +13,16 @@ function testNodes(actual: DotNode[], expected: any[]) {
     expect(actualNode.id).toBe(expectedNode.id);
     expect(actualNode.content).toBe(expectedNode.content);
     expect(actualNode.statement).toBe(expectedNode.statement);
-    expect(actualNode.children.length).toBe(expectedNode.children.length);
+    if (
+      actualNode.statement === 'condition' ||
+      actualNode.statement === 'decision' ||
+      actualNode.statement === 'repeat'
+    ) {
+      expect(actualNode.children.length).toBe(expectedNode.children.length);
 
-    if (actualNode.children.length !== 0) {
-      testNodes(actualNode.children, expectedNode.children);
+      if (actualNode.children.length !== 0) {
+        testNodes(actualNode.children, expectedNode.children);
+      }
     }
   }
 }

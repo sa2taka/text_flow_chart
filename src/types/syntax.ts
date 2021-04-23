@@ -3,37 +3,34 @@ export type Statement = DotNode['statement'];
 export type DotNode = NormalNode | DecisionNode | ConditionNode | RepeatNode | NextNode;
 export type HasChildNode = DecisionNode | ConditionNode | RepeatNode;
 
-export interface ParentChildRelation {
-  children: DotNode[];
-  parentNode?: HasChildNode;
-}
-
 export interface DotNodeBase {
-  id?: string;
-  content: string;
-  parentNode?: HasChildNode;
-  level: number;
-  children: DotNode[];
+  readonly statement: Statement;
+  readonly id?: string;
+  readonly content: string;
+  readonly parentNode?: HasChildNode;
+  readonly level: number;
 }
 
 export interface NormalNode extends DotNodeBase {
   statement: 'normal';
-  children: never[];
 }
 
-export interface DecisionNode extends DotNodeBase, ParentChildRelation {
+export interface DecisionNode extends DotNodeBase {
   statement: 'decision';
+  readonly children: ConditionNode[];
 }
 
-export interface ConditionNode extends DotNodeBase, ParentChildRelation {
+export interface ConditionNode extends DotNodeBase {
   statement: 'condition';
+  readonly parentNode: DecisionNode;
+  readonly children: DotNode[];
 }
 
-export interface RepeatNode extends DotNodeBase, ParentChildRelation {
+export interface RepeatNode extends DotNodeBase {
   statement: 'repeat';
+  readonly children: DotNode[];
 }
 
 export interface NextNode extends DotNodeBase {
   statement: 'next';
-  children: never[];
 }
