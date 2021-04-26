@@ -27,14 +27,12 @@
     "build:exec": "rollup -c",
     "build:cleanup": "rimraf dist",
     "build:copy-js": "cpx -C dist/text-flow-chart.min.js docs",
-    "watch": "run-p watch:html watch:js watch:exec watch:server",
-    "watch:exec": "rollup -c --configDebug --watch",
-    "watch:server": "live-server watch",
+    "watch": "run-p watch:html watch:exec watch:server",
+    "watch:exec": "rollup -c rollup-debug.config.js --configDebug --watch",
+    "watch:server": "live-server dist",
     "watch:html": "run-s watch:copy-html watch:replace-html",
-    "watch:copy-html": "cpx -C docs/index.html watch/",
-    "watch:replace-html": "replace text-flow-chart\\.min\\.js text-flow-chart.js watch/index.html",
-    "watch:js": "npm-watch watch:copy-js",
-    "watch:copy-js": "cpx -C dist/text-flow-chart.js watch/"
+    "watch:copy-html": "cpx -C docs/index.html dist/",
+    "watch:replace-html": "replace text-flow-chart\\.min\\.js text-flow-chart.js dist/index.html"
   },
   "watch": {
     "watch:copy-js": "dist/text-flow-chart.js"

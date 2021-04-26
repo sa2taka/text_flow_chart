@@ -10,7 +10,7 @@
       "sourceMaps": true,
       "preLaunchTask": "yarn watch",
       "postDebugTask": "app stop",
-      "webRoot": "${workspaceFolder}/watch"
+      "webRoot": "${workspaceFolder}/dist/"
     },
     {
       "name": "Debug Jest Tests",

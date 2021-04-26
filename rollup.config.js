@@ -29,6 +29,7 @@ export default (commandLineArgs) => [
         file: pkg.browser.replace('.js', '.min.js'),
         format: 'iife',
         plugins: [terser()],
+        sourcemap: commandLineArgs.configDebug ? 'inline' : undefined,
       },
     ],
     plugins: [
