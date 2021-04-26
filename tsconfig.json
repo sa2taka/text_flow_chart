@@ -5,19 +5,28 @@
     "target": "es5",
     "module": "esnext",
     "moduleResolution": "node",
-    "lib": ["esnext", "dom"],
+    "lib": [
+      "esnext",
+      "dom"
+    ],
     "esModuleInterop": true,
-    "sourceMap": false,
+    "sourceMap": true,
     "strict": true,
     "noEmit": true,
     "baseUrl": ".",
     "resolveJsonModule": true,
     "skipLibCheck": true,
     "paths": {
-      "~/*": ["./src/*"],
-      "@/*": ["./src/*"]
+      "~/*": [
+        "./src/*"
+      ],
+      "@/*": [
+        "./src/*"
+      ]
     },
     "declaration": true
   },
-  "files": ["src/text_flow_chart.ts"]
+  "files": [
+    "src/text_flow_chart.ts"
+  ]
 }

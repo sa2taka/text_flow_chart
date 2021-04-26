@@ -14,7 +14,7 @@ function toCamelCase(p) {
     return s.charAt(1).toUpperCase();
   });
 }
-export default [
+export default (commandLineArgs) => [
   {
     input: `src/${moduleName}.ts`,
     output: [

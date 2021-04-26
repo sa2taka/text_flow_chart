@@ -3,10 +3,38 @@
   "tasks": [
     {
       "type": "npm",
-      "script": "test:transpile",
-      "problemMatcher": [],
-      "label": "npm: test:transpile",
-      "detail": "yarn tsc --noEmit false --sourcemap  --outDir ./dist ./src/dot.ts"
+      "script": "watch",
+      "label": "yarn watch",
+      "detail": "yarn watch",
+      "isBackground": true,
+      "problemMatcher": {
+        "pattern": [
+          {
+            "regexp": ".",
+            "file": 1,
+            "location": 2,
+            "message": 3
+          }
+        ],
+        "background": {
+          "activeOnStart": true,
+          "beginsPattern": "waiting for changes",
+          "endsPattern": "waiting for changes",
+        },
+      },
+    },
+    {
+      "label": "app stop",
+      "type": "shell",
+      "command": "echo ${input:terminate}"
+    }
+  ],
+  "inputs": [
+    {
+      "id": "terminate",
+      "type": "command",
+      "command": "workbench.action.tasks.terminate",
+      "args": "yarn watch"
     }
   ]
 }

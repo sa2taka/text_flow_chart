@@ -28,7 +28,7 @@ namespace Global {
   };
   export const foundationWidth = 1;
   export const globalInformation = {
-    maxLevel: 0.2,
+    maxLevel: 1,
   };
   export let nodes: DotNode[] = [];
 }

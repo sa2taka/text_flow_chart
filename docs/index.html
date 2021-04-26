@@ -1,63 +1,65 @@
 <!DOCTYPE html>
 <html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Text Flow Chart Demo</title>
+    <script src="https://unpkg.com/@hpcc-js/wasm@0.3.11/dist/index.min.js"></script>
+    <script
+      src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.4.12/ace.min.js"
+      integrity="sha512-GoORoNnxst42zE3rYPj4bNBm0Q6ZRXKNH2D9nEmNvVF/z24ywVnijAWVi/09iBiVDQVf3UlZHpzhAJIdd9BXqw=="
+      crossorigin="anonymous"
+    ></script>
+    <script src="text-flow-chart.min.js"></script>
+    <style type="text/css" media="screen">
+      #main-content {
+        width: 100%;
+        height: 100vh;
+        display: -webkit-box;
+        display: -ms-flexbox;
+        display: flex;
+      }
 
-<head>
-  <meta charset="UTF-8">
-  <meta http-equiv="X-UA-Compatible" content="IE=edge">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Text Flow Chart Demo</title>
-  <script src="https://unpkg.com/@hpcc-js/wasm@0.3.11/dist/index.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.4.12/ace.min.js"
-    integrity="sha512-GoORoNnxst42zE3rYPj4bNBm0Q6ZRXKNH2D9nEmNvVF/z24ywVnijAWVi/09iBiVDQVf3UlZHpzhAJIdd9BXqw=="
-    crossorigin="anonymous"></script>
-  <script src="text-flow-chart.min.js"></script>
-  <style type="text/css" media="screen">
-    #main-content {
-      width: 100%;
-      height: 100vh;
-      display: -webkit-box;
-      display: -ms-flexbox;
-      display: flex;
-    }
+      #editor {
+        width: 50%;
+        height: 100%;
+      }
 
-    #editor {
-      width: 50%;
-      height: 100%;
-    }
+      #graph {
+        width: 50%;
+        height: 100%;
+        overflow: hidden;
+      }
 
-    #graph {
-      width: 50%;
-      height: 100%;
-      overflow: hidden;
-    }
+      .toggle-btn {
+        position: absolute;
+        top: 3px;
+        right: 28px;
 
-    .toggle-btn {
-      position: absolute;
-      top: 3px;
-      right: 28px;
+        background-color: #222244;
+        border: none;
+        color: white;
+        padding: 8px;
+        cursor: pointer;
+        border-radius: 50%;
+        border: none;
+        outline: none;
+      }
+    </style>
+  </head>
 
-      background-color: #222244;
-      border: none;
-      color: white;
-      padding: 8px;
-      cursor: pointer;
-      border-radius: 50%;
-      border: none;
-      outline: none;
-    }
-  </style>
-</head>
-
-<body>
-  <main id="main-content">
-    <div id="editor"></div>
-    <div id="graph">
-      <button class="toggle-btn"><img src="https://icongr.am/jam/magic-f.svg?size=16&color=ffffff" width="16px"
-          height="16px" loading="lazy" /></button>
-    </div>
-  </main>
-  <script>
-    var initialText = `1. normal line
+  <body>
+    <main id="main-content">
+      <div id="editor"></div>
+      <div id="graph">
+        <button class="toggle-btn">
+          <img src="https://icongr.am/jam/magic-f.svg?size=16&color=ffffff" width="16px" height="16px" loading="lazy" />
+        </button>
+      </div>
+    </main>
+    <script>
+      var initialText = `1. normal line
 2. condition line
 - if condition
   process in condition
@@ -74,39 +76,38 @@
   3.1. indent lines without condition is considered "repeat"
   3.2. multi repeat
 `;
-    window.addEventListener('load', function () {
-      var editor = ace.edit("editor");
-      editor.setOption("tabSize", 2);
-      var graph = textFlowChart.getGraphvizInstance("graph");
-      graph
-        .attributer(function (datum, index, nodes) {
-          if (datum === "svg") {
-            var width = graph.node().clientWidth;
-            var height = graph.node().clientHeight;
-            var unit = "px";
-            selection.attr("width", `${width}${unit}`).attr("height", `${height}${unit}`);
-            datum.attributes.width = `${width}${unit}`;
-            datum.attributes.height = `${height}${unit}`;
+      window.addEventListener('load', function () {
+        var editor = ace.edit('editor');
+        editor.setOption('tabSize', 2);
+        var graph = textFlowChart.getGraphvizInstance('graph');
+        graph
+          .attributer(function (datum, index, nodes) {
+            if (datum === 'svg') {
+              var width = graph.node().clientWidth;
+              var height = graph.node().clientHeight;
+              var unit = 'px';
+              selection.attr('width', `${width}${unit}`).attr('height', `${height}${unit}`);
+              datum.attributes.width = `${width}${unit}`;
+              datum.attributes.height = `${height}${unit}`;
+            }
+          })
+          .transition(function () {
+            return graph.transition(1000);
+          });
+
+        var rendering = false;
+
+        editor.getSession().on('change', render);
+        editor.setValue(initialText);
+
+        function render() {
+          src = editor.getValue();
+          if (!src) {
+            return;
           }
-        })
-        .transition(function () {
-          return graph.transition(1000);
-        });
-
-      var rendering = false;
-
-      editor.getSession().on('change', render);
-      editor.setValue(initialText);
-
-      function render() {
-        src = editor.getValue();
-        if (!src) {
-          return;
+          textFlowChart.render(graph, src);
         }
-        textFlowChart.render(graph, src);
-      }
-    });
-  </script>
-</body>
-
+      });
+    </script>
+  </body>
 </html>
