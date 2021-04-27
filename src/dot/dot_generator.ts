@@ -104,10 +104,19 @@ function createRepeatDot(node: RepeatNode, index: number, locus: number[]): Stri
     .map((node, childIndex) => createDotDefinition(node, childIndex, childLocus))
     .join('\n');
 
+  const lastChildIds = [];
   const lastChildIndex = node.children.length - 1;
-  const lastChildNodeId = getNodeId(lastChildIndex, childLocus);
+  const lastChild = node.children[lastChildIndex];
+  if (lastChild.statement === 'decision') {
+    lastChildIds.push(...getDicisionChildIds(lastChild, childLocus.concat(lastChildIndex)));
+  } else {
+    lastChildIds.push(getNodeId(lastChildIndex, childLocus));
+  }
 
-  const repeatTerminatorEdgeDefinition = `  ${lastChildNodeId} -> ${nodeId}_end`;
+  const repeatTerminatorEdgeDefinition = lastChildIds
+    .map((lastChildNodeId) => `  ${lastChildNodeId} -> ${nodeId}_end`)
+    .join('\n');
+
   return (
     nodeDefinition +
     '\n' +
@@ -171,6 +180,7 @@ function createNodeDot(node: DotNode, nodeId: string, width: number) {
 
 function createLinkBeforeEdgeDot(targetNode: DotNode, targetIndex: number, locus: number[]) {
   console.assert(targetNode.statement !== 'condition', 'Condition node must not have edge.');
+  console.assert(targetNode.statement !== 'next', 'Next node must not have edge.');
   if (targetNode.statement === 'condition') {
     return '';
   }
@@ -195,8 +205,9 @@ function createLinkBeforeEdgeDot(targetNode: DotNode, targetIndex: number, locus
       return `  ${parentNodeId} -> ${targetNodeId} [label = "${conditionLabel}"]`;
     }
   } else {
-    const prevNode = (targetNode.parentNode?.children || Global.nodes)[targetIndex - 1];
-    const prevNodeId = getNodeId(targetIndex - 1, locus);
+    const prevNodeIndex = targetIndex - 1;
+    const prevNode = (targetNode.parentNode?.children || Global.nodes)[prevNodeIndex];
+    const prevNodeId = getNodeId(prevNodeIndex, locus);
 
     switch (prevNode.statement) {
       case 'normal':
@@ -204,7 +215,7 @@ function createLinkBeforeEdgeDot(targetNode: DotNode, targetIndex: number, locus
       case 'repeat':
         return `  ${prevNodeId}_end -> ${targetNodeId}`;
       case 'decision':
-        return getDicisionChildIds(prevNode, locus.slice(0, locus.length - 1).concat(targetIndex - 1))
+        return getDicisionChildIds(prevNode, locus.concat(prevNodeIndex))
           .map((nodeId) => `${nodeId} -> ${targetNodeId}`)
           .join('\n');
     }
