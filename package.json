@@ -29,7 +29,7 @@
     "build:copy-js": "cpx -C dist/text-flow-chart.min.js docs",
     "watch": "run-p watch:html watch:exec watch:server",
     "watch:exec": "rollup -c rollup-debug.config.js --configDebug --watch",
-    "watch:server": "live-server dist",
+    "watch:server": "live-server dist --no-brwoser",
     "watch:html": "run-s watch:copy-html watch:replace-html",
     "watch:copy-html": "cpx -C docs/index.html dist/",
     "watch:replace-html": "replace text-flow-chart\\.min\\.js text-flow-chart.js dist/index.html"
