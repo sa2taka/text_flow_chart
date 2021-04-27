@@ -204,25 +204,29 @@ function createLinkBeforeEdgeDot(targetNode: DotNode, targetIndex: number, locus
       case 'repeat':
         return `  ${prevNodeId}_end -> ${targetNodeId}`;
       case 'decision':
-        return prevNode.children
-          .map((conditionNode, conditionIndex) => {
-            const childIndex = conditionNode.children.length - 1;
-            const node = conditionNode.children[conditionNode.children.length - 1];
-            if (node.statement === 'next') {
-              return undefined;
-            }
-
-            const nodeId = getNodeId(
-              childIndex,
-              locus.slice(0, locus.length - 1).concat(targetIndex - 1, conditionIndex)
-            );
-            return `  ${nodeId} -> ${targetNodeId}`;
-          })
-          .filter((elm) => elm)
+        return getDicisionChildIds(prevNode, locus.slice(0, locus.length - 1).concat(targetIndex - 1))
+          .map((nodeId) => `${nodeId} -> ${targetNodeId}`)
           .join('\n');
     }
   }
   return '';
+}
+
+function getDicisionChildIds(decisionNode: DecisionNode, decisionNodeLocus: readonly number[]): (string | undefined)[] {
+  return decisionNode.children
+    .flatMap((conditionNode, conditionIndex) => {
+      const childIndex = conditionNode.children.length - 1;
+      const node = conditionNode.children[conditionNode.children.length - 1];
+      if (node.statement === 'decision') {
+        return getDicisionChildIds(node, decisionNodeLocus.concat(conditionIndex, childIndex));
+      }
+      if (node.statement === 'next') {
+        return undefined;
+      }
+
+      return getNodeId(childIndex, decisionNodeLocus.concat(conditionIndex));
+    })
+    .filter((nodeId) => nodeId);
 }
 
 function search(id: string, nodes?: DotNode[], nowLocus: number[] = []): number[] | undefined {
@@ -256,7 +260,7 @@ function findMaxLevel(nodes: DotNode[]): number {
   }, -1);
 }
 
-function getNodeId(index: number, locus: number[]) {
+function getNodeId(index: number, locus: readonly number[]) {
   return 'node_' + (locus.length === 0 ? '' : locus.join('_') + '_') + index.toString();
 }
 
