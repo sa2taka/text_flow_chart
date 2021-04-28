@@ -5,7 +5,7 @@
     "node": true,
     "browser": true
   },
-  "plugins": ["react", "prettier"],
+  "plugins": ["@typescript-eslint"],
   "parserOptions": {
     "ecmaVersion": 2020,
     "sourceType": "module",
@@ -13,8 +13,5 @@
       "jsx": true
     }
   },
-  "extends": ["eslint:recommended", "prettier", "plugin:react/recommended", "prettier/react"],
-  "rules": {
-    "prettier/prettier": "error"
-  }
+  "extends": ["eslint:recommended", "prettier", "plugin:@typescript-eslint/recommended"]
 }

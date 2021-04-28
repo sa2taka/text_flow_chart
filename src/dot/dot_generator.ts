@@ -1,7 +1,7 @@
 import { DotNode, NormalNode, DecisionNode, ConditionNode, RepeatNode, NextNode } from '~/types/syntax';
 
-namespace Global {
-  export const defaultSetting = `
+class Global {
+  static defaultSetting = `
   graph [
     charset = "UTF-8";
     labelloc = "t";
@@ -18,21 +18,21 @@ namespace Global {
   ];
 `;
 
-  export const shapes: Record<DotNode['statement'], string> = {
+  static shapes: Record<DotNode['statement'], string> = {
     normal: 'box',
     decision: 'diamond',
     condition: '',
     repeat: 'house',
     next: '',
   };
-  export const foundationWidth = 1;
-  export const globalInformation = {
+  static foundationWidth = 1;
+  static globalInformation = {
     maxLevel: 1,
   };
-  export let nodes: DotNode[] = [];
+  static nodes: DotNode[] = [];
 }
 
-export function createDot(nodes: DotNode[]) {
+export function createDot(nodes: DotNode[]): string {
   Global.nodes = nodes;
   const maxLevel = findMaxLevel(Global.nodes);
 
@@ -48,7 +48,7 @@ export function createDot(nodes: DotNode[]) {
   );
 }
 
-function createDotDefinition(node: DotNode, index: number, locus: number[]): String {
+function createDotDefinition(node: DotNode, index: number, locus: number[]): string {
   switch (node.statement) {
     case 'normal':
       return createNormalDot(node, index, locus);
@@ -63,14 +63,14 @@ function createDotDefinition(node: DotNode, index: number, locus: number[]): Str
   }
 }
 
-function createNormalDot(node: NormalNode, index: number, locus: number[]): String {
+function createNormalDot(node: NormalNode, index: number, locus: number[]): string {
   const width = (Global.foundationWidth * Global.globalInformation.maxLevel) / (node.level + 1);
   const nodeDefinition = createNodeDot(node, getNodeId(index, locus), width);
 
   return nodeDefinition + '\n\n' + createLinkBeforeEdgeDot(node, index, locus);
 }
 
-function createDecisionDot(node: DecisionNode, index: number, locus: number[]): String {
+function createDecisionDot(node: DecisionNode, index: number, locus: number[]): string {
   const width = (Global.foundationWidth * Global.globalInformation.maxLevel) / (node.level + 1);
   const nodeDefinition = createNodeDot(node, getNodeId(index, locus), width);
   const childLocus = locus.concat([index]);
@@ -81,7 +81,7 @@ function createDecisionDot(node: DecisionNode, index: number, locus: number[]): 
   return nodeDefinition + '\n' + childrenDifinition + '\n\n' + createLinkBeforeEdgeDot(node, index, locus);
 }
 
-function createConditionDot(node: ConditionNode, index: number, locus: number[]): String {
+function createConditionDot(node: ConditionNode, index: number, locus: number[]): string {
   console.assert(!(index === 0 && locus.length === 0), 'Condition statement does not locate at the top.');
 
   const childLocus = locus.concat([index]);
@@ -92,7 +92,7 @@ function createConditionDot(node: ConditionNode, index: number, locus: number[])
   return childrenDifinition;
 }
 
-function createRepeatDot(node: RepeatNode, index: number, locus: number[]): String {
+function createRepeatDot(node: RepeatNode, index: number, locus: number[]): string {
   const lastShape = 'invhouse';
   const width = (Global.foundationWidth * Global.globalInformation.maxLevel) / (node.level + 1);
   const nodeId = getNodeId(index, locus);
@@ -130,15 +130,15 @@ function createRepeatDot(node: RepeatNode, index: number, locus: number[]): Stri
   );
 }
 
-function createNextDot(node: NextNode, index: number, locus: number[]): String {
+function createNextDot(node: NextNode, index: number, locus: number[]): string {
   console.assert(!(index === 0 && locus.length === 0), 'Next statement is not at the top.');
   console.assert(node.parentNode?.statement === 'condition', 'Next statement should be in condition statement');
 
   let prevId = '';
 
   if (index === 0) {
-    let parentNode = node.parentNode;
-    let workLocus = locus.slice();
+    const parentNode = node.parentNode;
+    const workLocus = locus.slice();
     if (parentNode?.statement === 'condition') {
       workLocus.pop();
     }
@@ -153,8 +153,7 @@ function createNextDot(node: NextNode, index: number, locus: number[]): String {
   if (!nextNodeLocus || nextNodeLocus.length === 0) {
     throw Error('Id not find');
   }
-  const nextIndex = nextNodeLocus.pop()!;
-  const nextId = getNodeId(nextIndex, nextNodeLocus);
+  const nextId = getNodeId(nextNodeLocus[nextNodeLocus.length - 1], nextNodeLocus.slice(0, nextNodeLocus.length - 1));
 
   const emptyEdgeFrom = `  ${nextId}_empty [width = 0; shape = point; label = "";];`;
   const emptyEdgeTo = `  ${prevId}_empty [width = 0; shape = point; label = "";];`;
@@ -189,12 +188,12 @@ function createLinkBeforeEdgeDot(targetNode: DotNode, targetIndex: number, locus
     return '';
   }
 
-  const parent = targetNode.parentNode!;
+  const parent = targetNode.parentNode;
   const targetNodeId = getNodeId(targetIndex, locus);
 
   if (targetIndex === 0) {
     // Target node is first child.
-    if (parent.statement !== 'condition') {
+    if (parent?.statement !== 'condition') {
       const parentIndex = locus[locus.length - 1];
       const parentNodeId = getNodeId(parentIndex, locus.slice(0, locus.length - 1));
       return `  ${parentNodeId} -> ${targetNodeId}`;

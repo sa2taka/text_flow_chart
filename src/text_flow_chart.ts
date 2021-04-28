@@ -12,19 +12,20 @@ interface GraphvizEnterElement {
 }
 
 type GraphvizBaseType = Element | GraphvizEnterElement | Document | Window | null;
+type ImplemtableGraphviz = Graphviz<GraphvizBaseType, unknown, GraphvizBaseType, unknown>;
 
 export default {
-  render(target: string | Graphviz<GraphvizBaseType, any, GraphvizBaseType, any>, text: String) {
+  render(target: string | ImplemtableGraphviz, text: string, callback?: () => void): ImplemtableGraphviz {
     if (typeof target === 'string') {
-      return graphviz(`#${target}`).renderDot(createDotFromText(text));
+      return graphviz(`#${target}`).renderDot(createDotFromText(text), callback);
     } else {
-      return target.renderDot(createDotFromText(text));
+      return target.renderDot(createDotFromText(text), callback);
     }
   },
-  convertToDot(text: String) {
+  convertToDot(text: string): string {
     return createDotFromText(text);
   },
-  getGraphvizInstance(targetId: string) {
+  getGraphvizInstance(targetId: string): ImplemtableGraphviz {
     return graphviz(`#${targetId}`);
   },
 };
