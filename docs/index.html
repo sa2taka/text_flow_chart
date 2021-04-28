@@ -13,6 +13,10 @@
     ></script>
     <script src="text-flow-chart.min.js"></script>
     <style type="text/css" media="screen">
+      body {
+        margin: 0;
+      }
+      
       #main-content {
         width: 100%;
         height: 100vh;
@@ -46,6 +50,10 @@
         border: none;
         outline: none;
       }
+
+      #error-message { 
+        position: absolute; top: 1%; left: 51%; color: red;
+      }
     </style>
   </head>
 
@@ -53,6 +61,7 @@
     <main id="main-content">
       <div id="editor"></div>
       <div id="graph">
+        <div id="error-message"></div>
         <button class="toggle-btn">
           <img src="https://icongr.am/jam/magic-f.svg?size=16&color=ffffff" width="16px" height="16px" loading="lazy" />
         </button>
@@ -75,11 +84,31 @@
 3. repeat line
   3.1. indent lines without condition is considered "repeat"
   3.2. multi repeat
+  - if 
+    nest decision
+    - nested if
+      nested if statement
+    - nested else
+      nested else statement
+      nested else statement
+  - else
+    else statement
 `;
       window.addEventListener('load', function () {
+        var rendering = false;
+        function resetRendering() {
+          rendering = false;
+        }
+        
+        function onError(errorMessage) {
+          resetRendering();
+          document.getElementById("error-message").innerText = errorMessage;
+        }
+
         var editor = ace.edit('editor');
         editor.setOption('tabSize', 2);
-        var graph = textFlowChart.getGraphvizInstance('graph');
+        var graph = textFlowChart.getGraphvizInstance('graph').onerror(onError);
+
         graph
           .attributer(function (datum, index, nodes) {
             if (datum === 'svg') {
@@ -95,18 +124,26 @@
             return graph.transition(1000);
           });
 
-        var rendering = false;
-
-        editor.getSession().on('change', render);
-        editor.setValue(initialText);
-
         function render() {
+          if(rendering) {
+            return;
+          }
+          rendering = true;
           src = editor.getValue();
           if (!src) {
             return;
           }
-          textFlowChart.render(graph, src);
+          try {
+            textFlowChart.render(graph, src, resetRendering);            
+          } catch(error) {
+            resetRendering();
+            document.getElementById("error-message").innerText = error.message;
+          }
         }
+
+        editor.setValue(initialText);
+        editor.getSession().on('change', render);
+        render();
       });
     </script>
   </body>
