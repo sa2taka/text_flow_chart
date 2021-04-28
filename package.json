@@ -34,6 +34,7 @@
     "watch:html": "run-s watch:copy-html watch:replace-html",
     "watch:copy-html": "cpx -C docs/index.html dist/",
     "watch:replace-html": "replace text-flow-chart\\.min\\.js text-flow-chart.js dist/index.html",
+    "prepare": "husky install"
   },
   "watch": {
     "watch:copy-js": "dist/text-flow-chart.js"
