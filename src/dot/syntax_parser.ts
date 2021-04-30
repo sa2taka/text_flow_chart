@@ -29,7 +29,7 @@ export function parse(text: string): DotNode[] {
 
     const nodeBase = parseLine(line, level);
 
-    parentNode = divideNode(statement, nodeBase, parentNode, nodes);
+    parentNode = divideNode(statement, nodeBase, parentNode, nodes, index);
 
     prevLevel = level;
   });
@@ -41,12 +41,13 @@ function divideNode(
   statement: string,
   nodeBase: DotNodeBaseWithoutStatement,
   parentNode: HasChildNode | undefined,
-  nodes: DotNode[]
+  nodes: DotNode[],
+  lineNumber: number
 ) {
   switch (statement) {
     case 'condition': {
       if (parentNode?.statement !== 'decision') {
-        throw SyntaxError('Condition node must be child of decision statement.');
+        throw SyntaxError(`line ${lineNumber}: Condition node must be child of decision statement.`);
       }
       const conditionNode = { statement, ...nodeBase, children: [], parentNode } as ConditionNode;
       if (parentNode) {
@@ -60,7 +61,7 @@ function divideNode(
     case 'decision':
     case 'repeat': {
       if (parentNode?.statement === 'decision') {
-        throw SyntaxError('Decision node children must be condition statements.');
+        throw SyntaxError(`line ${lineNumber}:Decision node children must be condition statements.`);
       }
       const hasChildNode = { statement, ...nodeBase, children: [], parentNode };
       if (parentNode) {
@@ -74,7 +75,7 @@ function divideNode(
     case 'normal':
     case 'next': {
       if (parentNode?.statement === 'decision') {
-        throw SyntaxError('Decision node children must be condition statements.');
+        throw SyntaxError(`line ${lineNumber}: Decision node children must be condition statements.`);
       }
       const singleNode = { statement, ...nodeBase, parentNode };
       if (parentNode) {
@@ -106,7 +107,7 @@ function parseStatement(targetLine: string, targetIndex: number, lines: readonly
   const targetIndexLevel = countIndentLevel(targetLine);
   const nextIndexLevel = countIndentLevel(nextLine);
 
-  if (targetIndexLevel <= nextIndexLevel && nextLine.match(/^\s*-/)) {
+  if (targetIndexLevel <= nextIndexLevel && nextLine.match(/^\s*-[^>]/)) {
     return 'decision';
   }
 
