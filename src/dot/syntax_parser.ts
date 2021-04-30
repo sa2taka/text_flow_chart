@@ -18,10 +18,18 @@ export function parse(text: string): DotNode[] {
     const statement = parseStatement(line, index, lines);
     const level = countIndentLevel(line, indentUnit);
 
+    if (statement !== 'condition' && parentNode?.statement === 'condition' && parentNode?.level === level) {
+      parentNode = parentNode.parentNode.parentNode;
+    }
+
     for (let times = 0; times < prevLevel - level; times += 1) {
-      if ((statement !== 'condition' || parentNode?.level !== level) && isConditionNodeHasSameLevelParent(parentNode)) {
+      if (
+        !(statement === 'condition' && parentNode?.level === level) &&
+        isConditionNodeHasSameLevelParent(parentNode)
+      ) {
         parentNode = parentNode?.parentNode;
       }
+
       if (parentNode) {
         parentNode = parentNode.parentNode;
       }
@@ -29,7 +37,7 @@ export function parse(text: string): DotNode[] {
 
     const nodeBase = parseLine(line, level);
 
-    parentNode = divideNode(statement, nodeBase, parentNode, nodes, index);
+    parentNode = divideNode(statement, nodeBase, parentNode, nodes, index + 1);
 
     prevLevel = level;
   });
@@ -94,7 +102,7 @@ function parseStatement(targetLine: string, targetIndex: number, lines: readonly
     return 'next';
   }
 
-  if (targetLine.match(/^\s*-/)) {
+  if (targetLine.match(/^\s*-[^>]/)) {
     return 'condition';
   }
 
@@ -165,12 +173,12 @@ function findIndentUnit(lines: string[]) {
   return gcd(...levels);
 }
 
-function isConditionNodeHasSameLevelParent(parentNode: DotNode | undefined) {
+function isConditionNodeHasSameLevelParent(node: DotNode | undefined) {
   return (
-    parentNode &&
-    parentNode.statement === 'condition' &&
-    parentNode.parentNode &&
-    parentNode.parentNode.statement === 'decision' &&
-    parentNode.level === parentNode.parentNode.level
+    node &&
+    node.statement === 'condition' &&
+    node.parentNode &&
+    node.parentNode.statement === 'decision' &&
+    node.level === node.parentNode.level
   );
 }
